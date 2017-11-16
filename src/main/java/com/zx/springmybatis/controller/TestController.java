@@ -1,5 +1,6 @@
 package com.zx.springmybatis.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.zx.springmybatis.entity.User;
 import com.zx.springmybatis.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,5 +24,10 @@ public class TestController {
     @GetMapping("/getAll")
     public List<User> getAll() {
         return userService.getAll();
+    }
+
+    @GetMapping("/page")
+    public PageInfo<User> page(Integer pageNum,Integer pageSize){
+        return userService.getAllForPage(pageNum, pageSize);
     }
 }

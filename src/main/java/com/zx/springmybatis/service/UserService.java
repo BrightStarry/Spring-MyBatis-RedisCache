@@ -1,5 +1,6 @@
 package com.zx.springmybatis.service;
 
+import com.github.pagehelper.PageInfo;
 import com.zx.springmybatis.entity.User;
 
 import java.util.List;
@@ -10,4 +11,6 @@ import java.util.List;
  */
 public interface UserService {
     List<User> getAll();
+
+    PageInfo<User> getAllForPage(Integer pageNum, Integer pageSize);
 }

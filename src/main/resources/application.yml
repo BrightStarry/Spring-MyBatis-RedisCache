@@ -6,32 +6,31 @@ spring:
     username: root
     password: 970389
     type: com.alibaba.druid.pool.DruidDataSource
-    url: jdbc:mysql://127.0.0.1:3306/test1
-    # druidÅäÖÃ,¾ßÌå²ÎÊı¿É½øÈëDruidDataSourceÀàÖĞÈ¥¿´
+    url: jdbc:mysql://127.0.0.1:3306/test1?useSSL=false
+    # druidåˆå§‹åŒ–å‚æ•°
     initialSize: 5
     minIdle: 5
     maxActive: 20
-    # ÅäÖÃ»ñÈ¡Á¬½ÓµÈ´ı³¬Ê±µÄÊ±¼ä
+    # ç­‰å¾…è¿æ¥æ—¶æœ€å¤§è¶…æ—¶æ—¶é—´
     maxWait: 60000
-    # ÅäÖÃ¼ä¸ô¶à¾Ã²Å½øĞĞÒ»´Î¼ì²â£¬¼ì²âĞèÒª¹Ø±ÕµÄ¿ÕÏĞÁ¬½Ó£¬µ¥Î»ÊÇºÁÃë
+    # é—´éš”å¤šä¹…æ£€æµ‹éœ€è¦å…³é—­çš„è¿æ¥ï¼Œå•ä½ä¸ºæ¯«ç§’
     timeBetweenEvictionRunsMillis: 60000
-    # ÅäÖÃÒ»¸öÁ¬½ÓÔÚ³ØÖĞ×îĞ¡Éú´æµÄÊ±¼ä£¬µ¥Î»ÊÇºÁÃë
+    # é…ç½®ä¸€ä¸ªè¿æ¥åœ¨æ± ä¸­çš„æœ€å°ç”Ÿå­˜æ—¶é—´ï¼Œå•ä½ä¸ºæ¯«ç§’
     minEvictableIdleTimeMillis: 300000
     validationQuery: SELECT 1 FROM DUAL
     testWhileIdle: true
     testOnBorrow: false
     testOnReturn: false
-    # ´ò¿ªPSCache£¬²¢ÇÒÖ¸¶¨Ã¿¸öÁ¬½ÓÉÏPSCacheµÄ´óĞ¡
     poolPreparedStatements: true
     maxPoolPreparedStatementPerConnectionSize: 20
-    # ÅäÖÃ¼à¿ØÍ³¼ÆÀ¹½ØµÄfilters£¬È¥µôºó¼à¿Ø½çÃæsqlÎŞ·¨Í³¼Æ£¬'wall'ÓÃÓÚ·À»ğÇ½
     filters: stat,wall,log4j
-    # Í¨¹ıconnectPropertiesÊôĞÔÀ´´ò¿ªmergeSql¹¦ÄÜ£»ÂıSQL¼ÇÂ¼
+    # æ‰“å¼€æ…¢sqlè®°å½•
     connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
-    # ºÏ²¢¶à¸öDruidDataSourceµÄ¼à¿ØÊı¾İ
+    # åˆå¹¶å¤šä¸ªdataSourceçš„ç›‘æ§è®°å½•
     useGlobalDataSourceStat: true
+
 mybatis:
   configuration:
-    #¿ªÆôÍÕ·å
+    # é©¼å³°
     map-underscore-to-camel-case: true
 

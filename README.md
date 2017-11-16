@@ -1,5 +1,9 @@
 #### Spring整合MyBatis、通用mapper、PageHelper
+https://gitee.com/free/Mapper mapper主页
+https://gitee.com/free/Mapper/blob/master/wiki/mapper3/5.Mappers.md   mapper所有方法
+https://gitee.com/free/Mybatis_Utils/blob/master/MybatisGeneator/MybatisGeneator.md MybatisGeneator插件学习
 http://blog.csdn.net/gebitan505/article/details/54929287
+
 
 * 如果出现无法读取yml文件的错误，检查yml文件的编码，删除所有中文即可
 
@@ -103,7 +107,29 @@ http://blog.csdn.net/gebitan505/article/details/54929287
                 log.info("pageInfo:{}",pageInfo);
                 return pageInfo;
             }
+5. 主键回写。在主键字段上增加@GeneratedValue(generator = "JDBC")这样的注解，还有uuid等，即可回写。  
+该回写是在传入的实体对象中，原本为空的主键被赋值，而不是直接返回。
 
+6. 注意：insertSelective()：保存一个实体，null的属性不会保存，会使用数据库默认值；  
+insert():保存一个实体，null的属性也会保存，不会使用数据库默认值;  
+update的方法也是一样。带Selective的才使用默认值 
+
+7. Example使用：
+
+                Example example = new Example(User.class)//传入实体类对象构造
+                        .selectProperties("id", "name")//设置要查询的字段
+                        .excludeProperties("id");//设置不查询的字段,与要查询同时设置，要查询的优先
+                example.orderBy("id").desc();//排序
+                example.createCriteria();//其他方法类似，基本都能用方法名理解
+                        .andLessThan("id","4");//查询属性小于该值的记录
+                        .andGreaterThan("id","4");//查询属性大于该值的记录
+                        .andAllEqualTo(temp);//查询字段值等于该对象的属性值的记录，所有属性。
+                        .andEqualTo(temp);//查询字段值等于该对象的属性值的记录，非空属性。
+                        .andBetween("name","a","c");//between查询
+                        .andCondition("name = 'a' or name ='b'");//可以直接使用sql查询，此处输入where后面的字符
+        
+        
+                List<User> userList = userMapper.selectByExample(example);
 
 
 

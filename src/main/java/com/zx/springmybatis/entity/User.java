@@ -1,7 +1,11 @@
 package com.zx.springmybatis.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -11,9 +15,13 @@ import javax.persistence.Table;
  */
 
 @Data
+@Builder
 @Table
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Long id;
     private String name;
     private String password;

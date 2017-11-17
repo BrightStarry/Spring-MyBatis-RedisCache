@@ -13,4 +13,5 @@ public interface UserService {
     List<User> getAll();
 
     PageInfo<User> getAllForPage(Integer pageNum, Integer pageSize);
+
 }

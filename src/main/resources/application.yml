@@ -34,3 +34,11 @@ mybatis:
     # 驼峰
     map-underscore-to-camel-case: true
 
+# 输出MyBatis语句,trace会输出结果,debug只输出语句
+logging:
+  level:
+    com:
+      zx:
+        springmybatis:
+          dao: debug
+

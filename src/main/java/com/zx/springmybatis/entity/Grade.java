@@ -4,28 +4,28 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * author:Administrator
- * datetime:2017/11/7 0007 09:10
+ * author:ZhengXing
+ * datetime:2017/11/28 0028 09:34
+ * 班级
  */
-
 @Data
 @Builder
 @Table
 @NoArgsConstructor
 @AllArgsConstructor
-@Accessors(chain = true)
-public class User {
+public class Grade {
     @Id
     @GeneratedValue(generator = "JDBC")
     private Long id;
     private String name;
-    private String password;
-    private String loginAddress;
+
+    public Grade(String name) {
+        this.name = name;
+    }
 }

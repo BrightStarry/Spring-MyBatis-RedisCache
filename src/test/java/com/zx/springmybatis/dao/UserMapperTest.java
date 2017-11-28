@@ -1,15 +1,21 @@
 package com.zx.springmybatis.dao;
 
+import com.zx.springmybatis.entity.Grade;
 import com.zx.springmybatis.entity.User;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.reflection.ArrayUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.CollectionUtils;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -24,6 +30,9 @@ public class UserMapperTest {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private GradeMapper gradeMapper;
 
     @Test
     public void test() {
@@ -41,10 +50,23 @@ public class UserMapperTest {
 //                .andBetween("name","a","c");//between查询
 //                .andCondition("name = 'a' or name ='b'");//可以直接使用sql查询，此处输入where后面的字符
 
-
         List<User> userList = userMapper.selectByExample(example);
         userList.forEach(user->{
                 log.info("user:{}",user);
         });
+    }
+
+    @Test
+    public void test1() {
+        List<Grade> grades = Arrays.asList(new Grade("a"), new Grade("b"), new Grade("c"));
+        gradeMapper.addAll(grades);
+    }
+
+    @Test
+    public void test2() {
+
+        User user = new User().setName("a").setPassword("aa");
+        List<User> a = userMapper.findByCondition(user);
+        a.forEach(item-> System.out.println(a));
     }
 }

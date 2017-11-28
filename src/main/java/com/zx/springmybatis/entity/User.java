@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.List;
 
 /**
  * author:Administrator
@@ -28,4 +29,5 @@ public class User {
     private String name;
     private String password;
     private String loginAddress;
+    private Long gradeId;
 }

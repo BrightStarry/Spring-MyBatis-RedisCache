@@ -1,4 +1,4 @@
-#### Spring整合MyBatis/通用mapper/PageHelper,学习MyBatis注解/注解形式的动态sql等
+#### SpringBoot整合MyBatis/通用mapper/PageHelper,学习MyBatis注解/注解形式的动态sql等
 https://gitee.com/free/Mapper mapper主页  
 https://gitee.com/free/Mapper/blob/master/wiki/mapper3/5.Mappers.md   mapper所有方法  
 https://gitee.com/free/Mybatis_Utils/blob/master/MybatisGeneator/MybatisGeneator.md MybatisGeneator插件学习  
@@ -42,6 +42,12 @@ http://blog.csdn.net/gebitan505/article/details/54929287
           configuration:
             #开启驼峰
             map-underscore-to-camel-case: true
+            
+5. 如果需要使用mapper.xml,只需要在yml添加如下即可:
+>
+      mapper-locations: classpath:mapper/*.xml #xml文件内容
+      type-aliases-package: com.zx.springmybatis.entity #实体类包
+>
 
 #### 配置Druid
 4. 引入Druid依赖:
@@ -113,7 +119,7 @@ http://blog.csdn.net/gebitan505/article/details/54929287
         
 3. 其他mapper继承他即可。
 
-4. 以上，除了通用mapper，pagehelper也已经可以使用（ps：startPage方法后必须紧跟查询语句；返回的PageInfo中会包含许多分页信息）：
+4. 以上，除了通用mapper，pageHelper也已经可以使用（ps：startPage方法后必须紧跟查询语句；返回的PageInfo中会包含许多分页信息）：
         
         public PageInfo<User> getAllForPage(Integer pageNum, Integer pageSize) {
                 pageNum = pageNum == null ? 1 : pageNum;
@@ -336,4 +342,13 @@ SQL构建器使用教程(Mybatis官网): http://www.mybatis.org/mybatis-3/zh/sta
             a.forEach(item-> System.out.println(a));
 >
 当然,这类通用的sql,在通用Mapper中都已经提供了.
+
+#### 单表查询和多表关联查询的选择
+* 一般来说,性能是多表占优.但是如果数据量大的话或许不一定.
+* 多表查询如果关联表过多性能很低.
+* 多表查询不方便使用缓存.
+* 多表查询如果遇到分库分表等情况,需要重写sql
+* 综上所述,推荐单表查询
+
+#### SpringCache + redis 实现注解缓存
 

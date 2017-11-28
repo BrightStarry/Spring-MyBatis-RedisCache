@@ -33,6 +33,8 @@ mybatis:
   configuration:
     # 驼峰
     map-underscore-to-camel-case: true
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.zx.springmybatis.entity
 
 # 输出MyBatis语句,trace会输出结果,debug只输出语句
 logging:

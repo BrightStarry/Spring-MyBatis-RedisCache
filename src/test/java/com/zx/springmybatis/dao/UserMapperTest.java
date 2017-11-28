@@ -69,4 +69,12 @@ public class UserMapperTest {
         List<User> a = userMapper.findByCondition(user);
         a.forEach(item-> System.out.println(a));
     }
+
+    @Test
+    public void test3() {
+        User a = userMapper.a(1L);
+        System.out.println(a);
+    }
+
+
 }

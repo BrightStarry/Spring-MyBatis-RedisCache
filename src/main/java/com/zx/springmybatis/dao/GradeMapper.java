@@ -3,21 +3,19 @@ package com.zx.springmybatis.dao;
 
 import com.zx.springmybatis.config.CommonMapper;
 import com.zx.springmybatis.entity.Grade;
+import com.zx.springmybatis.entity.User;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.InsertProvider;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.jdbc.AbstractSQL;
-import org.apache.ibatis.jdbc.SQL;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 @Repository
 public interface GradeMapper extends CommonMapper<Grade> {
+
 
     /**
      * 最原始批量增加

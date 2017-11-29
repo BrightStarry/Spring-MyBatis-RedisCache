@@ -1,12 +1,10 @@
 package com.zx.springmybatis.dao;
 
 
-import com.zx.springmybatis.config.CommonMapper;
+import com.zx.springmybatis.config.mybatis.CommonMapper;
 import com.zx.springmybatis.entity.Grade;
-import com.zx.springmybatis.entity.User;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.InsertProvider;
-import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

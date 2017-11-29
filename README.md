@@ -8,6 +8,9 @@ http://blog.csdn.net/gebitan505/article/details/54929287
 * 如果出现无法读取yml文件的错误，检查yml文件的编码，删除所有中文即可
 
 #### 奇淫巧技
+* 想到了一个lombok中@NonNull注解比较好的使用方式,只要在异常处理类中处理NullPointException,将其封装成自定义异常处理即可;  
+这样,使用@NonNull注解后,就可以较为优雅地处理这类算是已经自己处理的异常了
+
 * Guava CaseFormat:驼峰命名转换工具类
 
 * !!!国人编写的一些框架千万不要傻逼的看jar中反编译的java代码,IDEA会提示你下载有javadoc的源码,下过来,  
@@ -49,7 +52,7 @@ http://blog.csdn.net/gebitan505/article/details/54929287
       type-aliases-package: com.zx.springmybatis.entity #实体类包
 >
 
-#### 配置Druid
+#### 配置Druid(需要注意的是,关于Druid的配置参数,去掉了许多没用的参数,具体参见其github上的文档,保留只是为了在替换时方便些(无需增减参数))
 4. 引入Druid依赖:
 
 		<dependency>
@@ -351,4 +354,75 @@ SQL构建器使用教程(Mybatis官网): http://www.mybatis.org/mybatis-3/zh/sta
 * 综上所述,推荐单表查询
 
 #### SpringCache + redis 实现注解缓存
+1. 引入spring redis和spring cache依赖:
+>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+>
+
+2. 在yml如下配置即可:
+>
+      #缓存
+      cache:
+        #缓存名字
+        cache-names: redis
+        #缓存类型,同时引入guava包和redis时,不配置可能有bug
+        type: redis
+      #redis配置
+      redis:
+        host: 106.14.7.29
+        port: 6379
+        password: 970389
+        pool:
+          max-active: 10
+          max-idle: 1
+          min-idle: 0
+          max-wait: 50000
+>
+
+3. 在Application类上增加:@EnableCaching注解(也就表示可用该注解一键关闭所有缓存)
+
+4. 对所有需要缓存的对象需要实现Serializable接口
+
+5. 此时,两次执行如下语句,第二次已经无需进行数据库查询,并且未进入方法体(其实现为AOP):
+>
+        /**
+         * 查询所有班级
+         * 注意,@Cacheable中的cacheNames值需要在yml中配置,也就是spring.cache.cache-names
+         */
+        @Cacheable(value = "redis")
+        public List<Grade> finAll() {
+            log.info("查询所有班级");
+            return gradeMapper.selectAll();
+        }
+>
+
+6. cacheNames该值,也可以在cacheManager中指定
+
+7. 此时如果查看redis中的key的话,会发现该程序自动缓存的所有key,都有个redis:\xac\xed\x00\x05t\x00这样的前缀,  
+其原因是使用了JDK默认的对象序列化方法Serializer<Object>.convert().而RedisTemplate<K,V>类的两个泛型为空,导致一些问题;  
+只需要替换redis cache的默认序列化配置即可(其方法同样是在配置类中配置一个返回RedisTemplate类型的bean方法)
+
+#### SpringCache注解
+* @CacheConfig:注解在类上,表示该类方法上的注解都默认使用该注解定义的配置;  
+配置该注解后,方法上的注解也可以配置自己的属性,覆盖该注解;  
+可配置cacheNames/keyGenerator/cacheManager/cacheResolver
+
+* @Cacheable:注解在方法上,表示执行该方法前先从缓存中读取数据,没有再从方法中读取;
+    * cacheNames: 缓存名,也就是配置在yml中的属性(如果不配置@CacheConfig,它是必须的)
+    * key: 缓存的Key,可配置,不配置使用spring默认的SimpleKeyGenerator生成;
+    * condition: 缓存对象的条件,非必须,SpEL表达式,只有满足条件的内容才会被缓存,  
+        例如#param.length() < 3,表示参数param长度小于3时才被缓存;
+    * unless: 另一个缓存条件参数,SpEL表达式,它不同于condition参数的地方在于它的判断时机，  
+        该条件是在函数被调用之后才做判断的，所以它可以通过对result进行判断
+    * keyGenerator: 指定key生成器;该参数和key参数互斥,配置了某一个就不能配置另一个;
+    * cacheManager: 指定缓存管理器;
+    * cacheResolver: 指定缓存解析器;
+* 

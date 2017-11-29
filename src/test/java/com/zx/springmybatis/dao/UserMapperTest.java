@@ -8,6 +8,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.CollectionUtils;
 import tk.mybatis.mapper.entity.Example;
@@ -51,8 +53,8 @@ public class UserMapperTest {
 //                .andCondition("name = 'a' or name ='b'");//可以直接使用sql查询，此处输入where后面的字符
 
         List<User> userList = userMapper.selectByExample(example);
-        userList.forEach(user->{
-                log.info("user:{}",user);
+        userList.forEach(user -> {
+            log.info("user:{}", user);
         });
     }
 
@@ -67,13 +69,24 @@ public class UserMapperTest {
 
         User user = new User().setName("a").setPassword("aa");
         List<User> a = userMapper.findByCondition(user);
-        a.forEach(item-> System.out.println(a));
+        a.forEach(item -> System.out.println(a));
     }
 
     @Test
     public void test3() {
         User a = userMapper.a(1L);
         System.out.println(a);
+    }
+
+    /**
+     * 测试redis
+     */
+    @Autowired
+    private RedisTemplate<String,String> redisTemplate;
+
+    @Test
+    public void test4(){
+        redisTemplate.opsForValue().set("a","test");
     }
 
 

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -20,7 +21,7 @@ import java.util.List;
 @Table
 @NoArgsConstructor
 @AllArgsConstructor
-public class Grade {
+public class Grade implements Serializable{
     @Id
     @GeneratedValue(generator = "JDBC")
     private Long id;

@@ -1,12 +1,10 @@
 package com.zx.springmybatis.dao;
 
-import com.zx.springmybatis.config.CommonMapper;
+import com.zx.springmybatis.config.mybatis.CommonMapper;
 import com.zx.springmybatis.dao.driver.CommonConditionLanguageDriver;
-import com.zx.springmybatis.entity.Grade;
 import com.zx.springmybatis.entity.User;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
-import tk.mybatis.mapper.common.MySqlMapper;
 
 import java.util.List;
 

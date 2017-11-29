@@ -1,4 +1,4 @@
-package com.zx.springmybatis.config;
+package com.zx.springmybatis.config.druid;
 
 import com.alibaba.druid.support.http.WebStatFilter;
 

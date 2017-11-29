@@ -26,6 +26,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.selectAll();
     }
 
+    //分页测试
     @Override
     public PageInfo<User> getAllForPage(Integer pageNum, Integer pageSize) {
         pageNum = pageNum == null ? 1 : pageNum;

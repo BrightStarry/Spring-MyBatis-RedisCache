@@ -28,6 +28,24 @@ spring:
     connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
     # 合并多个dataSource的监控记录
     useGlobalDataSourceStat: true
+  #缓存
+  cache:
+    #缓存名字
+    cache-names: redis
+    #缓存类型,同时引入guava包和redis时,不配置可能有bug
+    type: redis
+  #redis配置
+  redis:
+    host: 106.14.7.29
+    port: 6379
+    password: 970389
+    pool:
+      max-active: 10
+      max-idle: 1
+      min-idle: 0
+      max-wait: 5000
+    timeout: 5000
+    database: 0
 
 mybatis:
   configuration:

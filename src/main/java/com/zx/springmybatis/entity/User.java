@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -22,7 +23,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class User {
+public class User implements Serializable{
     @Id
     @GeneratedValue(generator = "JDBC")
     private Long id;

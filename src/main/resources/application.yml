@@ -31,7 +31,15 @@ spring:
   #缓存
   cache:
     #缓存名字
-    cache-names: redis
+    cache-names: #该属性的接收类型为list,得在这样写才可以分为一个个元素
+      - a
+      - b
+      - c
+    #缓存过期时间
+    cacheExpires:  #自定义属性,也是list,用来配置缓存过期时间,值为0时根据我的逻辑是使用默认超时时间的
+      - 3600
+      - 1
+      - 0
     #缓存类型,同时引入guava包和redis时,不配置可能有bug
     type: redis
   #redis配置

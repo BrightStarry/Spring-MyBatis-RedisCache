@@ -8,6 +8,12 @@ http://blog.csdn.net/gebitan505/article/details/54929287
 * 如果出现无法读取yml文件的错误，检查yml文件的编码，删除所有中文即可
 
 #### 奇淫巧技
+* IDEA, ctrl + backspace,快速删除
+
+* 使用System.out.printf("cacheName:%s",item); 格式化输出.注意时后缀时tf
+
+* IDEA/Spring Boot/yml文件中的属性中,按 CTRL + B ,可进入该属性注入的代码处..屌..无意中按了下
+
 * 想到了一个lombok中@NonNull注解比较好的使用方式,只要在异常处理类中处理NullPointException,将其封装成自定义异常处理即可;  
 这样,使用@NonNull注解后,就可以较为优雅地处理这类算是已经自己处理的异常了
 
@@ -143,7 +149,7 @@ insert():保存一个实体，null的属性也会保存，不会使用数据库�
 update的方法也是一样。带Selective的才使用默认值 
 
 7. Example使用：
-
+>
                 Example example = new Example(User.class)//传入实体类对象构造
                         .selectProperties("id", "name")//设置要查询的字段
                         .excludeProperties("id");//设置不查询的字段,与要查询同时设置，要查询的优先
@@ -156,8 +162,22 @@ update的方法也是一样。带Selective的才使用默认值
                         .andBetween("name","a","c");//between查询
                         .andCondition("name = 'a' or name ='b'");//可以直接使用sql查询，此处输入where后面的字符
         
-        
                 List<User> userList = userMapper.selectByExample(example);
+>
+
+8. 修改操作的使用:
+>
+        public void updateGradeById(Long gradeId,Grade grade) {
+    
+            Example example = new Example(Grade.class);
+            example.createCriteria().andEqualTo("id", gradeId);
+    
+            int i = gradeMapper.updateByExampleSelective(grade, example);
+            //根据id直接更新
+            //gradeMapper.updateByExampleSelective();
+            System.out.println("更新条数:" + i);
+        }
+>
                 
 #### 输出MyBatisSQL语句
 * 在yml中如下配置(com.zx.springmybatis.dao为自己的包名):
@@ -372,7 +392,15 @@ SQL构建器使用教程(Mybatis官网): http://www.mybatis.org/mybatis-3/zh/sta
       #缓存
       cache:
         #缓存名字
-        cache-names: redis
+        cache-names: #该属性的接收类型为list,得在这样写才可以分为一个个元素
+          - a
+          - b
+          - c
+        #缓存过期时间
+        cacheExpires:  #自定义属性,也是list,用来配置缓存过期时间
+          - 3600
+          - 1
+          - 0
         #缓存类型,同时引入guava包和redis时,不配置可能有bug
         type: redis
       #redis配置
@@ -392,6 +420,8 @@ SQL构建器使用教程(Mybatis官网): http://www.mybatis.org/mybatis-3/zh/sta
 4. 对所有需要缓存的对象需要实现Serializable接口
 
 5. 此时,两次执行如下语句,第二次已经无需进行数据库查询,并且未进入方法体(其实现为AOP):
+!!之前我一直以为其实现是AOP...后来我在@EnableCahcing注解中找到了..Mode参数,  
+才发现其默认实现是代理类,当然可以选择用aop
 >
         /**
          * 查询所有班级
@@ -404,20 +434,230 @@ SQL构建器使用教程(Mybatis官网): http://www.mybatis.org/mybatis-3/zh/sta
         }
 >
 
-6. cacheNames该值,也可以在cacheManager中指定
-
-7. 此时如果查看redis中的key的话,会发现该程序自动缓存的所有key,都有个redis:\xac\xed\x00\x05t\x00这样的前缀,  
+6. 此时如果查看redis中的key的话,会发现该程序自动缓存的所有key,都有个redis:\xac\xed\x00\x05t\x00这样的前缀,  
 其原因是使用了JDK默认的对象序列化方法Serializer<Object>.convert().而RedisTemplate<K,V>类的两个泛型为空,导致一些问题;  
-只需要替换redis cache的默认序列化配置即可(其方法同样是在配置类中配置一个返回RedisTemplate类型的bean方法)
+只需要替换redis cache的默认序列化配置即可(其方法同样是在配置类中配置一个返回RedisTemplate类型的bean方法)(下面有介绍)
+
+7. 自定义redis配置类,详见代码及其注释:
+>
+    /**
+     * author:ZhengXing
+     * datetime:2017/11/29 0029 13:32
+     * redis缓存配置类
+     *
+     * CachingConfigurerSupport该类使用空方法实现了CachingConfigurer接口,
+     * 子类只需要实现想要自定义的方法即可配置 缓存管理器/主键生成器/缓存解析器/异常处理器等;
+     * 如果不实现该接口,配置该类后,还需在注解中指定对应的keyGenerator才能生效
+     *
+     */
+    @Configuration
+    public class RedisCacheConfig  extends CachingConfigurerSupport{
+    
+        //Spring构造的redis连接工厂
+        @Autowired
+        private RedisConnectionFactory redisConnectionFactory;
+    
+        //自定义的用来读取yml文件中每个缓存名对应的缓存过期时间的属性类
+        @Autowired
+        private CustomRedisCacheExpireProperties customRedisCacheExpireProperties;
+    
+        /**
+         * 匿名内部类构建主键生成器
+         * 其参数分别为 调用缓存的类(service)/调用缓存的方法/方法的参数列表
+         */
+        @Bean
+        @Override
+        public KeyGenerator keyGenerator() {
+            return (object,method,params)->{
+                //类名:方法名:参数[0]参数[1]...
+                StringBuilder key = new StringBuilder(object.getClass().getSimpleName() + "-" + method.getName() + ":");
+                for (Object param : params) {
+                    //直接追加,只要该参数是基本类型或实现了toString方法,就没问题,否则会显示xx@hashcode那种类型的字符
+                    //如果参数过多,需要自定义key
+                    key.append(param.toString());
+                }
+                return key.toString();
+            };
+        }
+    
+        /**
+         * 配置RedisTemplate
+         * 是为了替换默认的JDK的序列化器,使用默认的序列化器,key会乱码;
+         *
+         * 此处在Spring中的实现是,他有一个默认的RedisTemplate Bean,但使用了
+         * @ConditionalOnMissingBean(type = RedisTemplate.class)这样一个注解,
+         * 表示在我们没有配置自定义的bean的情况下,才使用它默认的bean
+         */
+        @Bean
+        public RedisTemplate redisTemplate() {
+            //创建StringRedis模版
+            StringRedisTemplate stringRedisTemplate = new StringRedisTemplate(redisConnectionFactory);
+            // 使用Jackson2JsonRedisSerialize 替换默认序列化
+            Jackson2JsonRedisSerializer<?> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+            objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+            jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
+    
+            //value使用jackJson序列化,key使用string序列化,string序列化不支持list等类型
+            //stringRedisTemplate.setKeySerializer(new StringRedisSerializer());//不需要该设置,key也不会乱码.
+            stringRedisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
+    
+            //InitializingBean接口提供的一个方法,在spring容器属性被初始化完成后再调用该方法
+            stringRedisTemplate.afterPropertiesSet();
+    
+            return  stringRedisTemplate;
+        }
+    
+        /**
+         * 创建缓存管理器
+         * 主要为了自定义若干cacheNames和缓存过期时间;
+         *
+         * 自定义该类后,如果缓存注解中使用了一个未配置的缓存名,并且,该类的一个dynamic属性为true,
+         * 就会生成一个新的以该名字为名的{@link Cache}对象,放入集合;
+         * 但如果给该缓存管理器配置了cacheNames(也就是调用了setCacheNames()方法),该dynamic属性就会被
+         * 设置为false,将无法动态加入缓存名;那么就会抛出无法找到该缓存的异常;
+         * 我觉得还是设置上比较好.
+         */
+        @Bean
+        @Override
+        public CacheManager cacheManager() {
+            RedisCacheManager redisCacheManager = new RedisCacheManager(redisTemplate());
+            //默认的过期时间,会被每个缓存名自己的过期时间覆盖
+            redisCacheManager.setDefaultExpiration(3600);
+            /**
+             * 启动时加载远程缓存; 不开启:每次第一次查询即使缓存中已经有旧的缓存,也不会读取到;
+             * 开启后如果缓存中已有缓存,第一次查询就会从缓存中读取
+             */
+            redisCacheManager.setLoadRemoteCachesOnStartup(true);
+            //开启后,key会携带上cacheName作为前缀
+            redisCacheManager.setUsePrefix(true);
+            /**
+             * 设置cacheNames,也可以在构造函数中设置,此处我使用在yml配置的cacheNames即可
+             * 需要注意的是,显而易见,此处的RedisCacheManager还未注入yml中的cacheNames;
+             * 所以如果使用redisCacheManager.getCacheNames()取出的将是空的;
+             * 但是,如果使用setExpires()方法,设置好对应的cacheName和过期时间,还是能够生效的
+             */
+            //redisCacheManager.setCacheNames(Arrays.asList(cacheNames));
+            //Collection<String> cacheNames = redisCacheManager.getCacheNames();
+    
+            //使用自定义的属性类,根据yml配置,生成缓存名和过期时间对应的map
+            Map<String, Long> expires = customRedisCacheExpireProperties.generateExpireMap();
+            //设置每个缓存对应的过期时间
+            redisCacheManager.setExpires(expires);
+            //给缓存管理器设置上缓存名s
+            redisCacheManager.setCacheNames(customRedisCacheExpireProperties.getCacheNames());
+    
+    
+            return redisCacheManager;
+        }
+    
+        /**
+         * 自定义缓存异常处理器.
+         * 该CacheErrorHandler接口只有一个实现类SimpleCacheErrorHandler.只是抛出了所有异常未做任何处理
+         *  有若干个方法,分别处理获取/修改/放入/删除缓存异常.
+         *  若有需要.可自定义实现,比如因为缓存不是必须的,那就可以只做日志记录,不再抛出异常
+         *
+         */
+        @Bean
+        @Override
+        public CacheErrorHandler errorHandler() {
+           return  new SimpleCacheErrorHandler(){
+                @Override
+                public void handleCacheGetError(RuntimeException exception, Cache cache, Object key) {
+                    super.handleCacheGetError(exception, cache, key);
+                }
+            };
+        }
+    
+        /**
+         * 自定义缓存解析器(该类必须是线程安全的)
+         *
+         * 其默认实现是SimpleCacheResolver
+         *
+         */
+        @Override
+        public CacheResolver cacheResolver() {
+            return super.cacheResolver();
+        }
+    }
+>
+
+8. 自定义yml spring.cache属性类,详见代码及其注释:  
+>
+    /**
+     * author:ZhengXing
+     * datetime:2017/12/1 0001 12:46
+     * 自定义的redis缓存中的过期时间属性
+     */
+    @Data
+    @ConfigurationProperties(prefix = "spring.cache")
+    @Component
+    public class CustomRedisCacheExpireProperties {
+        //该属性在spring cache框架自己的类中也会被获取
+        //此处获取是为了对长度进行校验,防止 缓存名字 - 缓存时间 没有一一匹配
+        private List<String> cacheNames;
+    
+        //缓存时间,和缓存名一一对应
+        private List<Long> cacheExpires;
+    
+        /**
+         * 生成Map,用来放入RedisManager中
+         */
+        public Map<String, Long> generateExpireMap() {
+            Map<String, Long> expireMap = new HashMap<>();
+            /**
+             * 校验参数值
+             */
+            //如果未配置cacheNames属性,返回空map
+            //如果未配置cacheExpires属性,也返回空map
+            if (CollectionUtils.isEmpty(cacheNames) || CollectionUtils.isEmpty(cacheExpires))
+                return expireMap;
+            //长度校验:只要数组不为空,有x个cacheNames,就需要x个cacheExpires,如果某个name无需缓存时间,设置为0即可
+            //其内部实现就是使用该Map生成若干个RedisCacheMetadata,该对象和cacheName一一对应,并且其中的默认过期时间就是0
+            //不对.我在redis中试了下,将key过期时间设为0或负数,该key会直接过期.
+            //找了很久..没找到其判断过期时间的代码
+            if(cacheNames.size() != cacheExpires.size())
+                //此处随便抛出一个非法状态异常,可自定义异常抛出
+                throw new IllegalStateException("cacheExpires设置非法.cacheNames和cacheExpires长度不一致");
+            //遍历cacheNames
+            for (int i = 0; i < cacheNames.size(); i++) {
+                //只有当cacheExpires设置的大于0时,才放入map
+                long expire = cacheExpires.get(i);
+                if (expire > 0)
+                    expireMap.put(cacheNames.get(i),expire);
+            }
+            return expireMap;
+        }
+    }
+>
+
 
 #### SpringCache注解
-* @CacheConfig:注解在类上,表示该类方法上的注解都默认使用该注解定义的配置;  
-配置该注解后,方法上的注解也可以配置自己的属性,覆盖该注解;  
-可配置cacheNames/keyGenerator/cacheManager/cacheResolver
+* 注意:
+    * spEl表达式如果不想使用,需要用两个单引号转移
 
-* @Cacheable:注解在方法上,表示执行该方法前先从缓存中读取数据,没有再从方法中读取;
-    * cacheNames: 缓存名,也就是配置在yml中的属性(如果不配置@CacheConfig,它是必须的)
-    * key: 缓存的Key,可配置,不配置使用spring默认的SimpleKeyGenerator生成;
+* @CacheConfig:注解在类上,表示该类方法上的注解都默认使用该注解定义的配置;  
+    配置该注解后,方法上的注解也可以配置自己的属性,覆盖该注解;  
+    可配置cacheNames/keyGenerator/cacheManager/cacheResolver
+
+* @Cacheable:(查询)注解在方法上,表示执行该方法前先从缓存中读取数据,没有再从方法中读取;
+    * cacheNames: 缓存名,也就是配置在yml中的属性(如果不配置@CacheConfig,它是必须的)  
+        需要注意的时,如果配置了自定义的RedisManager,即使RedisManager和yml中都没有配置的name也是可以使用的;
+        研表究明...当配置了自定义的缓存管理器后,yml中的cacheNames不会在再被使用
+    * key: 缓存的Key,可配置,不配置使用spring默认的SimpleKeyGenerator生成;  支持spEl表达式
+        除了上面使用方法参数作为Key以外，Spring还为我们提供了一个root对象可以生成key。通过root对象我们还可以获取到  
+        -------1.methodName  当前方法名    #root.methodName  
+        -------2.method       当前方法  
+        \#root.method.name  
+        -------3.target   当前被动用对象  
+        \#root.target  
+        -------4.targetClass      当前被调用对象Class#root.targetClass  
+        -------5.args    当前方法参数组成的数组  
+        \#root.args[0]  
+        -------6.caches    当前被调用方法所使用的Cache  
+        \#root.caches[0],name  
+        使用root作为key时，可以不用写root直接@Cache(key="caches[1].name"),他默认是使用#root的   
     * condition: 缓存对象的条件,非必须,SpEL表达式,只有满足条件的内容才会被缓存,  
         例如#param.length() < 3,表示参数param长度小于3时才被缓存;
     * unless: 另一个缓存条件参数,SpEL表达式,它不同于condition参数的地方在于它的判断时机，  
@@ -425,4 +665,52 @@ SQL构建器使用教程(Mybatis官网): http://www.mybatis.org/mybatis-3/zh/sta
     * keyGenerator: 指定key生成器;该参数和key参数互斥,配置了某一个就不能配置另一个;
     * cacheManager: 指定缓存管理器;
     * cacheResolver: 指定缓存解析器;
-* 
+    * sync: 缓存为空时,如果多个线程同时调用底层方法(数据库),则线程阻塞的调用,尝试为相同的key加载同样的value.
+        它会导致几个问题:1.不支持unless参数; 2.只能指定一个缓存; 3.不能与其他缓存相关的操作组合; 默认为false.
+        它适用于那种高并发下的,某个缓存正好过期的场景.
+        
+* @CachePut:(更新)无论缓存是否存在,都会将执行结果放入缓存;
+    用于insert方法,或update(如果时更新,需要将更新后的结果返回)
+
+* @CacheEvict:(删除)删除指定缓存;用于删除或更新操作
+    * 雷同参数不再赘述.自行查看
+    * allEntries: 是否删除所有条目(整个cacheNames),默认只删除当前key.
+        注意,当它为true时,不允许指定该注解的key参数
+    * beforeInvocation: 是否在方法调用前删除;
+        设置为true,无论结果如何该缓存都会被删除,(例如当方法异常);  
+        默认为false,也就是当该方法执行成功之后才会删除缓存(如果抛出异常,则不会删除)
+        
+* @Caching:使用该注解在同一个方法上叠加多个缓存注解;
+    该注解的成员变量如下(我就不想再说什么了,一目了然):
+    >
+        	Cacheable[] cacheable() default {};
+        	CachePut[] put() default {};
+        	CacheEvict[] evict() default {};
+    >
+
+* 自定义注解:只需要在注解类上增加上面这些注解,再将注解类注解到方法上,一样可以
+
+
+#### SpringCache使用设想
+对于缓存的使用,之前我觉得有一些问题.  
+例如,有一个根据id查询user的方法使用缓存;
+那么,如果有一个修改user的方法,使用@CachePut注解,将修改后的值直接放入缓存.  
+或者其他类似的场景,需要在方法中,修改其他方法需要读取的缓存.
+就需要将@CachePut/@CacheEvict上的注解上的key和@Cacheable上的key对应起来;  
+  
+例如我目前的写法,根据简单类名/方法名/参数值生成缓存.  
+我的查询方法是 CacheService类的findOneByGradeId方法.  
+就需要在新增缓存值的方法上这样写:@CachePut(key = "'CacheService-findOneByGradeId-' + #result.id")  
+那如果我需要修改类名/方法名等,岂不是爆炸了.  
+
+然后我突然顿悟.他是有个cacheNames的,可配置多个不同的缓存前缀;  
+那么,我就可以将每个类或有关联的几个缓存方法,设置上各自的cacheName.  
+然后将缓存的key都改为简单的可动态编写的.例如几个参数的hashcode等.  
+(或者直接每个缓存关联使用一个cacheName也可,只是这样名字的数量可能会很多)  
+然后,在缓存配置类的缓存管理器中不再设置缓存名集合,这样就可以动态生成缓存名了.  
+然后如果不需要默认过期时间的缓存,照旧可以在yml中自定义过期时间.  
+
+再或者,可以自定义一个注解,注解在类上,包含了类中的cacheName和其过期时间,  
+然后就可以在启动时扫描所有类,解析出数据,放入缓存管理器中.
+
+          

@@ -54,7 +54,9 @@ spring:
       max-wait: 5000
     timeout: 5000
     database: 0
-
+  output:
+    ansi:
+      enabled: always
 mybatis:
   configuration:
     # 驼峰

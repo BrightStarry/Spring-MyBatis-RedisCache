@@ -8,6 +8,34 @@ http://blog.csdn.net/gebitan505/article/details/54929287
 * 如果出现无法读取yml文件的错误，检查yml文件的编码，删除所有中文即可
 
 #### 奇淫巧技
+* 使用logback后,让控制台恢复彩色日志
+>
+    logback.xml如下配置
+    
+     <!-- 彩色日志 -->
+        <!-- 彩色日志依赖的渲染类 -->
+        <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+        <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
+        <conversionRule conversionWord="wEx"
+                        converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
+        <!-- 彩色日志格式 -->
+        <property name="CONSOLE_LOG_PATTERN"
+                  value="${CONSOLE_LOG_PATTERN:-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}" />
+        <!-- Console 输出设置 -->
+        <appender name="consoleLog" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+                <charset>utf8</charset>
+            </encoder>
+        </appender>
+     
+    yml增加如下配置
+    spring:
+      output:
+        ansi:
+          enabled: always
+>
+
 * IDEA, ctrl + backspace,快速删除
 
 * 使用System.out.printf("cacheName:%s",item); 格式化输出.注意时后缀时tf

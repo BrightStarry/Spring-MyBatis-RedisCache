@@ -5,9 +5,54 @@ https://gitee.com/free/Mybatis_Utils/blob/master/MybatisGeneator/MybatisGeneator
 http://blog.csdn.net/gebitan505/article/details/54929287  
 
 
+#### 记录
+* 在github逛到一个支付宝支付的无需申请支付宝api的项目...文档大略看了一遍就把项目撸下来了.
+想看看它是如何实现..知道对方已经支付成功的...然后就看见...他妈的..对方创建订单后..通知管理员,
+然后管理员打开自己的支付宝,通过比对金额和邮箱等信息,确认对方支付,手动修改状态....我的天..
+算了...也算是一个可行的个人支付方案把..
+
+#### bug
 * 如果出现无法读取yml文件的错误，检查yml文件的编码，删除所有中文即可
 
 #### 奇淫巧技
+* 在github上随便看的xpay项目中的,比较不错的获取ip的方法.
+>
+    /**
+         * 获取客户端IP地址
+         * @param request 请求
+         * @return
+         */
+        public static String getIpAddr(HttpServletRequest request) {
+            String ip = request.getHeader("x-forwarded-for");
+            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+                ip = request.getHeader("Proxy-Client-IP");
+            }
+            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+                ip = request.getHeader("WL-Proxy-Client-IP");
+            }
+            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+                ip = request.getRemoteAddr();
+                if (ip.equals("127.0.0.1")) {
+                    //根据网卡取本机配置的IP
+                    InetAddress inet = null;
+                    try {
+                        inet = InetAddress.getLocalHost();
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    }
+                    ip = inet.getHostAddress();
+                }
+            }
+            // 对于通过多个代理的情况，第一个IP为客户端真实IP,多个IP按照','分割
+            if (ip != null && ip.length() > 15) {
+                if (ip.indexOf(",") > 0) {
+                    ip = ip.substring(0, ip.indexOf(","));
+                }
+            }
+            return ip;
+        }
+>
+
 * 使用logback后,让控制台恢复彩色日志
 >
     logback.xml如下配置

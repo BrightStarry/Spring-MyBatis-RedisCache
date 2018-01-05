@@ -81,6 +81,9 @@ http://blog.csdn.net/gebitan505/article/details/54929287
           enabled: always
 >
 
+* SpringBoot默认日志格式:
+> [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-36.36thread] [%-5level] [%-36.36logger{36}:%-4.4line] - %msg%n
+
 * IDEA, ctrl + backspace,快速删除
 
 * 使用System.out.printf("cacheName:%s",item); 格式化输出.注意时后缀时tf

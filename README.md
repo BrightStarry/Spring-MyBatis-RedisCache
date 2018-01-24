@@ -53,7 +53,7 @@ http://blog.csdn.net/gebitan505/article/details/54929287
         }
 >
 
-* 使用logback后,让控制台恢复彩色日志
+* 使用logback后,让控制台恢复彩色日志(该操作在Spring Boot官方文档中有更详细的说明)
 >
     logback.xml如下配置
     
@@ -117,7 +117,7 @@ http://blog.csdn.net/gebitan505/article/details/54929287
 			<scope>runtime</scope>
 		</dependency>		
 		
-2. 在Application类上增加注解@MapperScan("com..zx.springmybatis.dao")，扫描dao层
+2. 在Application类上增加注解@MapperScan("com.zx.springmybatis.dao")，扫描dao层
 
 3. 然后就可以直接在dao类上使用mybatis注解了
 
@@ -724,15 +724,11 @@ SQL构建器使用教程(Mybatis官网): http://www.mybatis.org/mybatis-3/zh/sta
     * key: 缓存的Key,可配置,不配置使用spring默认的SimpleKeyGenerator生成;  支持spEl表达式
         除了上面使用方法参数作为Key以外，Spring还为我们提供了一个root对象可以生成key。通过root对象我们还可以获取到  
         -------1.methodName  当前方法名    #root.methodName  
-        -------2.method       当前方法  
-        \#root.method.name  
-        -------3.target   当前被动用对象  
-        \#root.target  
+        -------2.method       当前方法  #root.method.name  
+        -------3.target   当前被动用对象  #root.target  
         -------4.targetClass      当前被调用对象Class#root.targetClass  
-        -------5.args    当前方法参数组成的数组  
-        \#root.args[0]  
-        -------6.caches    当前被调用方法所使用的Cache  
-        \#root.caches[0],name  
+        -------5.args    当前方法参数组成的数组  #root.args[0]  
+        -------6.caches    当前被调用方法所使用的Cache  #root.caches[0],name  
         使用root作为key时，可以不用写root直接@Cache(key="caches[1].name"),他默认是使用#root的   
     * condition: 缓存对象的条件,非必须,SpEL表达式,只有满足条件的内容才会被缓存,  
         例如#param.length() < 3,表示参数param长度小于3时才被缓存;

@@ -105,7 +105,7 @@ http://blog.csdn.net/gebitan505/article/details/54929287
 
 ##### 配置Mybatis
 1. 引入依赖：(此处需要添加version的原因是，该jar是mybatis提供的，spring无法自动提供版本号)
-
+>
 		<dependency>
 			<groupId>org.mybatis.spring.boot</groupId>
 			<artifactId>mybatis-spring-boot-starter</artifactId>
@@ -115,18 +115,22 @@ http://blog.csdn.net/gebitan505/article/details/54929287
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<scope>runtime</scope>
-		</dependency>		
+		</dependency>
+>
+		
 		
 2. 在Application类上增加注解@MapperScan("com.zx.springmybatis.dao")，扫描dao层
 
 3. 然后就可以直接在dao类上使用mybatis注解了
 
 4. 如下配置开启驼峰：
+>
+    mybatis:
+      configuration:
+        #开启驼峰
+        map-underscore-to-camel-case: true
+>
 
-        mybatis:
-          configuration:
-            #开启驼峰
-            map-underscore-to-camel-case: true
             
 5. 如果需要使用mapper.xml,只需要在yml添加如下即可:
 >
@@ -134,14 +138,15 @@ http://blog.csdn.net/gebitan505/article/details/54929287
       type-aliases-package: com.zx.springmybatis.entity #实体类包
 >
 
-#### 配置Druid(需要注意的是,关于Druid的配置参数,去掉了许多没用的参数,具体参见其github上的文档,保留只是为了在替换时方便些(无需增减参数))
+#### 配置Druid - 未完全整合spring boot 
 4. 引入Druid依赖:
-
+>
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>druid</artifactId>
 			<version>${druid.version}</version>
 		</dependency>
+>
 
 5. 在yml文件中配置以spring.datasource开头的配置(具体配置参数可看DruidDataSource类源码)
 
@@ -157,7 +162,6 @@ http://blog.csdn.net/gebitan505/article/details/54929287
             }
         }
 
-#### 配置Druid监控统计功能
 7. 配置Servlet(原web.xml)：
 
         @WebServlet(urlPatterns = "/druid/*",
@@ -181,6 +185,109 @@ http://blog.csdn.net/gebitan505/article/details/54929287
         }
 
 9. 在Application类上加上@ServletComponentScan注解，让Servlet配置生效
+
+
+#### Spring Boot 整合 Druid
+* Druid的功能佷强大,包括sql记录/session监控/请求uri记录等
+* 依赖
+>
+        <dependency>
+           <groupId>com.alibaba</groupId>
+           <artifactId>druid-spring-boot-starter</artifactId>
+           <version>1.1.6</version>
+        </dependency>
+>
+* 配置属性
+>
+    spring:
+      datasource:
+        # 可自动识别
+        driver-class-name: com.mysql.jdbc.Driver
+        username: root
+        password: 970389
+        type: com.alibaba.druid.pool.DruidDataSource
+        url: jdbc:mysql://127.0.0.1:3306/test1?useSSL=false
+        # DataSource配置
+        druid:
+          # 初始容量
+          initial-size: 10
+          # 最大连接池个数
+          max-active: 20
+          # 最小空闲
+          min-idle: 10
+          # 获取连接最大等待时间
+          max-wait: 3000
+          # 是否缓存preparedStatement(PSCache),对游标提升巨大,建议oracle开启,mysql关闭
+          pool-prepared-statements: false
+          # 启用PSCache，必须配置大于0，当大于0时，poolPreparedStatements自动触发修改为true。在Druid中，不会存在Oracle下PSCache占用内存过多的问题，可以把这个数值配置大一些，比如说100
+          max-pool-prepared-statement-per-connection-size: 0
+          # 检测连接是否有效的sql，要求是一个查询语句，常用select 'x'。如果validationQuery为null，testOnBorrow、testOnReturn、testWhileIdle都不会起作用。
+          validation-query: select 'x'
+          # 检测连接是否有效的超时时间。秒,底层调用jdbc Statement对象的void setQueryTimeout(int seconds)方法
+          validation-query-timeout: 30
+          # 申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。
+          test-on-borrow: false
+          # 归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。
+          test-on-return: false
+          # 建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。
+          test-while-idle: true
+          # 驱逐策略间隔,如果连接空闲时间大于minEvictableIdleTimeMillis,则关闭
+          time-between-eviction-runs-millis: 60000
+          # 在池中的最小生存时间
+          min-evictable-idle-time-millis: 30000
+          # 在池中的最大生存时间
+          max-evictable-idle-time-millis: 600000
+          # 连接池中的minIdle数量以内的连接，空闲时间超过minEvictableIdleTimeMillis，则会执行keepAlive操作。
+          keep-alive: true
+          # 连接初始化时,执行的sql
+          connection-init-sqls:
+          # 开启的过滤器,常用的有  监控统计:stat  日志:log4j 防御sql注入:wall
+          filters: stat,wall,log4j
+          # 合并多个dataSource的监控记录
+          use-global-data-source-stat: true
+    
+          # 监控配置
+          # 是否启用stat-filter默认值true
+          web-stat-filter.enabled: true
+          # 匹配的uri
+          web-stat-filter.url-pattern: /*
+          # 忽略的uri
+          web-stat-filter.exclusions: *.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*
+          # 是否启用session统计
+          web-stat-filter.session-stat-enable: false
+    #      web-stat-filter.session-stat-max-count:
+    #      web-stat-filter.principal-session-name:
+    #      web-stat-filter.principal-cookie-name:
+          # 监控单个url调用的sql列表。
+          web-stat-filter.profile-enable: true
+          # StatViewServlet配置，说明请参考Druid Wiki，配置_StatViewServlet配置
+          #是否启用监控界面默认值true
+          stat-view-servlet.enabled: true
+          # web.xml的url-pattern,也就是访问/druid/*访问到该servlet
+          stat-view-servlet.url-pattern: /druid/*
+          #  允许清空统计数据
+          stat-view-servlet.reset-enable: true
+          # 用户名
+          stat-view-servlet.login-username: zx
+          # 密码
+          stat-view-servlet.login-password: 1223456
+          # ip白名单
+          stat-view-servlet.allow:
+          # ip黑名单
+          stat-view-servlet.deny:
+          # 过滤器配置
+          filter:
+            stat:
+              # 聚合sql 开启慢sql查询
+              merge-sql: true
+              # 是否开启慢sql查询
+              log-slow-sql: true
+              # 超过多少时间为慢sql 开启慢sql查询
+              slow-sql-millis: 3000
+            # 安全配置,防止sql注入. 具体参数可查看文档,包括禁止各类增删查改的操作
+    #        wall:
+    #          config:
+>
 
 
 #### 整合通用Mapper

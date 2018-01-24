@@ -23,7 +23,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
-		<druid.version>1.1.5</druid.version>
+		<druid.version>1.1.6</druid.version>
 		<mybatis-spring-boot-starter.version>1.3.1</mybatis-spring-boot-starter.version>
 		<mybatis-plus.version>2.1.5</mybatis-plus.version>
 		<mapper-spring-boot-starter.version>1.1.5</mapper-spring-boot-starter.version>
@@ -79,9 +79,11 @@
 			<version>${mybatis-spring-boot-starter.version}</version>
 		</dependency>
 
+
+
 		<dependency>
 			<groupId>com.alibaba</groupId>
-			<artifactId>druid</artifactId>
+			<artifactId>druid-spring-boot-starter</artifactId>
 			<version>${druid.version}</version>
 		</dependency>
 

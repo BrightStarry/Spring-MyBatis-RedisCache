@@ -10,9 +10,9 @@ import javax.servlet.annotation.WebInitParam;
  * datetime:2017/11/7 0007 10:10
  * druid 过滤器
  */
-@WebFilter(filterName="druidWebStatFilter",urlPatterns="/*",
-        initParams={
-                @WebInitParam(name="exclusions",value="*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*")// 忽略资源
-        })
+//@WebFilter(filterName="druidWebStatFilter",urlPatterns="/*",
+//        initParams={
+//                @WebInitParam(name="exclusions",value="*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*")// 忽略资源
+//        })
 public class DruidStatFilter extends WebStatFilter{
 }

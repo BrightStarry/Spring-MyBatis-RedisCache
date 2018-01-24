@@ -12,7 +12,7 @@ import javax.sql.DataSource;
  * datetime:2017/11/7 0007 09:37
  * druid 数据源 配置类
  */
-@Configuration
+//@Configuration
 public class DruidDataSourceConfiguration {
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource")

@@ -154,6 +154,7 @@ public class RedisCacheConfig  extends CachingConfigurerSupport{
 
     /**
      * 自定义缓存解析器(该类必须是线程安全的)
+     * 解析该缓存由哪些(可以多个) cacheNames处理
      *
      * 其默认实现是SimpleCacheResolver
      *

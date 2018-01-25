@@ -14,6 +14,10 @@ http://blog.csdn.net/gebitan505/article/details/54929287
 #### bug
 * 如果出现无法读取yml文件的错误，检查yml文件的编码，删除所有中文即可
 
+* 在aop方法等处,获取到request对象
+>         HttpServletRequest request = ((ServletRequestAttributes)RequestContextHolder.getRequestAttributes()).getRequest();
+
+
 #### 奇淫巧技
 * 在github上随便看的xpay项目中的,比较不错的获取ip的方法.
 >
@@ -891,5 +895,6 @@ SQL构建器使用教程(Mybatis官网): http://www.mybatis.org/mybatis-3/zh/sta
 
 再或者,可以自定义一个注解,注解在类上,包含了类中的cacheName和其过期时间,  
 然后就可以在启动时扫描所有类,解析出数据,放入缓存管理器中.
+
 
           

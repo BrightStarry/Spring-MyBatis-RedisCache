@@ -53,7 +53,7 @@ spring:
       # 匹配的uri
       web-stat-filter.url-pattern: /*
       # 忽略的uri *.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*
-      web-stat-filter.exclusions: /*.js,/*.gif,/*.jpg,/*.bmp,/*.png,/*.css,/*.ico,/druid/*
+      web-stat-filter.exclusions: "*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*"
       # 是否启用session统计
       web-stat-filter.session-stat-enable: true
       web-stat-filter.session-stat-max-count: 1000
